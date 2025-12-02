@@ -1,0 +1,36 @@
+# Dependências (Nunca suba isso, a Vercel instala sozinha)
+/node_modules
+/.pnp
+.pnp.js
+
+# Testes
+/coverage
+
+# Next.js (Arquivos de build gerados automaticamente)
+/.next/
+/out/
+
+# Produção
+/build
+
+# Arquivos de sistema e IDEs
+.DS_Store
+*.pem
+.vscode/
+
+# Logs de erro
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Variáveis de Ambiente (MUITO IMPORTANTE - SEGURANÇA)
+# Isso impede que sua BREVO_API_KEY vá para o GitHub
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
