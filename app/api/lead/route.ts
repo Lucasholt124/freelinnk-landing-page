@@ -2,9 +2,6 @@ import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
-    console.log("---------------------------------------------------")
-    console.log("Tentando usar a chave:", process.env.BREVO_API_KEY ? "A chave existe!" : "A chave está vazia/undefined")
-    console.log("Começo da chave:", process.env.BREVO_API_KEY?.substring(0, 10)) // Mostra só o começo para conferir
     const body = await request.json()
     const { name, email, phone } = body
 
@@ -14,16 +11,9 @@ export async function POST(request: Request) {
     }
 
     // Separa o nome para a Brevo
-const nameParts = name.split(" ")
+    const nameParts = name.split(" ")
     const firstName = nameParts[0]
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : ""
-
-    console.log("----------------------------------------------")
-    console.log("DADOS SAINDO DO SITE:")
-    console.log("Email:", email)
-    console.log("Telefone digitado:", phone)
-    console.log("Atributo WHATSAP:", phone)
-    console.log("----------------------------------------------")
 
     const apiKey = process.env.BREVO_API_KEY
 
@@ -33,7 +23,7 @@ const nameParts = name.split(" ")
     }
 
     // ---------------------------------------------------------
-    // PASSO 1: Salvar Contato no CRM da Brevo (Para sua automação futura)
+    // PASSO 1: Salvar Contato no CRM da Brevo
     // ---------------------------------------------------------
     try {
         await fetch("https://api.brevo.com/v3/contacts", {
@@ -48,10 +38,11 @@ const nameParts = name.split(" ")
                 attributes: {
                     NOME: firstName,
                     SOBRENOME: lastName,
-                    WHATSAP: phone,
+                    WHATSAP: phone, // Confirme que o atributo na Brevo se chama WHATSAP
                     ORIGEM: "LandingPage_Ultra"
                 },
-                updateEnabled: true // Atualiza se já existir
+                listIds: [2], // ID da sua lista na Brevo
+                updateEnabled: true
             }),
         })
     } catch (err) {
@@ -61,6 +52,8 @@ const nameParts = name.split(" ")
     // ---------------------------------------------------------
     // PASSO 2: Enviar E-mail de Boas-vindas (HTML) via Brevo
     // ---------------------------------------------------------
+    // Se você já validou o domínio, use no-reply@freelinnk.com
+    // Se não validou ainda, use o e-mail da sua conta Brevo no campo 'sender'
     const emailResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
         method: "POST",
         headers: {
@@ -69,7 +62,7 @@ const nameParts = name.split(" ")
             "api-key": apiKey,
         },
         body: JSON.stringify({
-            sender: { name: "Freelinnk", email: "lucasholt2021@gmail.com" }, // Precisa estar validado na Brevo
+            sender: { name: "Freelinnk", email: "lucasholt2021@gmail.com" },
             to: [{ email: email, name: name }],
             subject: "Sua vaga no Acesso Antecipado do Freelinnk está garantida!",
             htmlContent: `
@@ -110,11 +103,7 @@ const nameParts = name.split(" ")
         return NextResponse.json({ success: false, error: "Erro ao enviar confirmação." }, { status: 500 })
     }
 
-    // ---------------------------------------------------------
-    // PASSO 3: Resposta de Sucesso (Gatilho para o Redirecionamento)
-    // ---------------------------------------------------------
-    // O Frontend recebe esse "true", roda a animação de check verde
-    // e depois de 2.5s faz o window.location.href = "https://freelinnk.com"
+    // Retorna Sucesso para o Frontend redirecionar para /obrigado
     return NextResponse.json({ success: true })
 
   } catch (error) {

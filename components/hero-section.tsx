@@ -2,20 +2,21 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Check, Loader2, Sparkles, Shield, Zap, Lock } from "lucide-react"
 
 export function HeroSection() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState("")
   const [progress, setProgress] = useState(87)
 
-  // Simulação de Escassez (Gatilho Mental)
+  // Simulação de Escassez
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -32,7 +33,6 @@ export function HeroSection() {
     setError("")
 
     try {
-      // Conexão direta com seu Backend existente
       const response = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -45,16 +45,12 @@ export function HeroSection() {
         throw new Error(data.error || "Erro ao processar sua solicitação.")
       }
 
-      setIsSuccess(true)
+      // SUCESSO: Redireciona para a página de obrigado (Melhor para o Pixel do Facebook)
+      router.push("/obrigado")
 
-      // Redirecionamento após sucesso (Funil de Vendas)
-      setTimeout(() => {
-        window.location.href = "https://freelinnk.com"
-      }, 2500)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ocorreu um erro. Tente novamente.")
-    } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false) // Só para o loading se der erro
     }
   }
 
@@ -63,29 +59,6 @@ export function HeroSection() {
     { icon: Zap, text: "Analytics em tempo real" },
     { icon: Shield, text: "100% seguro e LGPD" },
   ]
-
-  if (isSuccess) {
-    return (
-      <section className="w-full px-6 pt-8 pb-24 min-h-[60vh] flex items-center justify-center">
-        <div className="max-w-[520px] mx-auto text-center animate-in fade-in zoom-in duration-500">
-          <div className="relative w-24 h-24 mx-auto mb-8">
-            <div className="absolute inset-0 rounded-full bg-[#7B2BFF]/20 animate-ping" />
-            <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-[#7B2BFF] to-[#0066FF] flex items-center justify-center">
-              <Check className="w-12 h-12 text-white" strokeWidth={3} />
-            </div>
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">
-            Parabéns! Sua vaga está garantida.
-          </h2>
-          <p className="text-lg text-muted-foreground mb-6">Verifique seu e-mail para acessar o Freelinnk.</p>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#7B2BFF]/10 text-[#7B2BFF] text-sm font-medium">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Redirecionando para a plataforma...
-          </div>
-        </div>
-      </section>
-    )
-  }
 
   return (
     <section className="w-full px-5 pt-4 pb-16 md:pt-8 md:pb-20">
@@ -102,7 +75,7 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* Headline de Alta Conversão */}
+        {/* Headline */}
         <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-foreground leading-[1.1] tracking-tight text-center mb-6 text-balance">
           Desbloqueie as ferramentas{" "}
           <span className="relative whitespace-nowrap">
@@ -118,7 +91,7 @@ export function HeroSection() {
           IA avançada, analytics profissional e gestão financeira completa. Acesso exclusivo para os primeiros criadores.
         </p>
 
-        {/* Benefícios Rápidos (Trust badges) */}
+        {/* Benefícios Rápidos */}
         <div className="flex flex-wrap justify-center gap-3 mb-10">
           {benefits.map((benefit) => (
             <div
@@ -131,10 +104,10 @@ export function HeroSection() {
           ))}
         </div>
 
-        {/* Formulário Otimizado */}
+        {/* Formulário */}
         <div className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl shadow-[#7B2BFF]/10 border border-gray-100 relative overflow-hidden">
 
-          {/* Barra de Progresso FOMO */}
+          {/* Barra de Progresso */}
           <div className="mb-6 p-4 rounded-xl bg-orange-50/80 border border-orange-100">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-orange-800 uppercase tracking-wider">Vagas preenchidas</span>
