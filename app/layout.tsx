@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import Script from "next/script" // ✅ Import do Script adicionado
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -18,7 +19,6 @@ export const metadata: Metadata = {
     locale: "pt_BR",
   },
   generator: 'v0.app',
-  // AQUI ESTÁ A CONFIGURAÇÃO EXATA DO SEU ÍCONE
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -45,6 +45,36 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${inter.className} antialiased bg-white`}>
+        {/* ✅ INÍCIO: Meta Pixel Code */}
+        <Script
+          id="meta-pixel-lp"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              !function(f,b,e,v,n,t,s)
+              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+              n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];
+              s.parentNode.insertBefore(t,s)}(window, document,'script',
+              'https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init', '719697624058334');
+              fbq('track', 'PageView');
+            `,
+          }}
+        />
+        <noscript>
+          <img
+            height="1"
+            width="1"
+            style={{ display: "none" }}
+            src="https://www.facebook.com/tr?id=719697624058334&ev=PageView&noscript=1"
+            alt="facebook pixel"
+          />
+        </noscript>
+        {/* ✅ FIM: Meta Pixel Code */}
+
         {children}
         <Analytics />
       </body>
