@@ -62,7 +62,7 @@ export async function POST(request: Request) {
             "api-key": apiKey,
         },
         body: JSON.stringify({
-            sender: { name: "Freelinnk", email: "lucasholt2021@gmail.com" },
+            sender: { name: "Freelinnk", email: "contato@freelinnk.com" },
             to: [{ email: email, name: name }],
             subject: "Sua vaga no Acesso Antecipado do Freelinnk está garantida!",
             htmlContent: `
