@@ -3,7 +3,14 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, Sparkles, Shield, Zap, Lock } from "lucide-react"
+import { Loader2, TrendingUp, Clock, Wallet } from "lucide-react"
+
+// Declaração global para evitar erro de TypeScript no window.fbq
+declare global {
+  interface Window {
+    fbq: any;
+  }
+}
 
 export function HeroSection() {
   const router = useRouter()
@@ -16,7 +23,7 @@ export function HeroSection() {
   const [error, setError] = useState("")
   const [progress, setProgress] = useState(87)
 
-  // Função visual: Formata o telefone para o usuário ver bonito (ex: (11) 99999-9999)
+  // Formatação visual do telefone
   const formatPhone = (value: string) => {
     return value
       .replace(/\D/g, "")
@@ -25,12 +32,12 @@ export function HeroSection() {
       .slice(0, 15)
   }
 
-  // Simulação da barra de progresso (Gatilho de Escassez)
+  // Barra de escassez (Mantenha, funciona bem)
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
         const next = prev + Math.random() * 0.1
-        return next >= 96 ? 87 : next
+        return next >= 98 ? 92 : next
       })
     }, 3000)
     return () => clearInterval(interval)
@@ -41,26 +48,22 @@ export function HeroSection() {
     setIsSubmitting(true)
     setError("")
 
-    // 1. Validação básica: impede envio de números incompletos
     if (formData.phone.length < 14) {
         setError("Por favor, digite um WhatsApp válido com DDD.")
         setIsSubmitting(false)
         return
     }
 
-    // 2. LIMPEZA PARA O BREVO: Remove parênteses, traços e espaços
-    // O usuário vê formatado, mas a API recebe limpo (ex: 11999999999)
     const payload = {
       ...formData,
       phone: formData.phone.replace(/\D/g, "")
     }
 
     try {
-      // Chama sua rota API existente (que conecta com o Brevo)
       const response = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload), // Envia o payload limpo
+        body: JSON.stringify(payload),
       })
 
       const data = await response.json()
@@ -69,7 +72,16 @@ export function HeroSection() {
         throw new Error(data.error || "Erro ao processar sua solicitação.")
       }
 
-      // Sucesso: Redireciona para obrigado
+      // --- RASTREAMENTO CRÍTICO AQUI ---
+      // Dispara o evento antes de sair da página para garantir que o Facebook marque o Lead
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Lead', {
+            content_name: 'Cadastro Acesso Antecipado',
+            value: 0.00,
+            currency: 'BRL'
+        });
+      }
+
       router.push("/obrigado")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ocorreu um erro. Tente novamente.")
@@ -77,81 +89,79 @@ export function HeroSection() {
     }
   }
 
-  const benefits = [
-    { icon: Sparkles, text: "IA Ultra" },
-    { icon: Zap, text: "Analytics Real" },
-    { icon: Shield, text: "Seguro" },
-  ]
-
   return (
-    <section className="w-full px-4 pt-2 pb-12 md:pt-10 md:pb-20">
-      <div className="max-w-[580px] mx-auto">
+    <section className="w-full px-4 pt-4 pb-12 md:pt-12 md:pb-24 overflow-hidden">
+      <div className="max-w-[640px] mx-auto relative z-10">
 
-        {/* Badge de Urgência */}
-        <div className="flex justify-center mb-4 md:mb-6">
-          <div className="relative inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#7B2BFF]/10 to-[#0066FF]/10 border border-[#7B2BFF]/20 shadow-sm">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7B2BFF] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#7B2BFF]" />
+        {/* Badge de Urgência - Mais direto */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-50 border border-red-100 shadow-sm animate-fade-in-up">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
             </span>
-            <span className="text-xs md:text-sm font-bold text-[#7B2BFF] tracking-wide">Restam apenas 12 vagas hoje</span>
+            <span className="text-xs font-bold text-red-600 tracking-wide uppercase">Últimas vagas do Lote Beta</span>
           </div>
         </div>
 
-        {/* Headline Otimizada */}
-        <h1 className="text-3xl md:text-5xl lg:text-[56px] font-bold text-foreground leading-[1.1] tracking-tight text-center mb-4 text-balance">
-          Desbloqueie o Poder{" "}
-          <span className="relative whitespace-nowrap">
-            <span className="relative z-10 bg-gradient-to-r from-[#7B2BFF] to-[#0066FF] bg-clip-text text-transparent">
-              ULTRA
-            </span>
-            <span className="absolute -bottom-1 left-0 right-0 h-2 bg-[#7B2BFF]/10 rounded-full -z-0" />
+        {/* Headline: Fim da "IA Genérica", Foco no Benefício Real */}
+        <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-[1.1] tracking-tight text-center mb-6 text-balance">
+          Pare de perder tempo com <br className="hidden md:block" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7B2BFF] to-[#6020D0]">
+            Link na Bio amador.
           </span>
         </h1>
 
-        <p className="text-base md:text-xl text-muted-foreground text-center leading-relaxed mb-6 max-w-[520px] mx-auto text-pretty px-2">
-          Acesso exclusivo à IA que cria seu conteúdo e gerencia suas finanças.
+        <p className="text-lg md:text-xl text-gray-600 text-center leading-relaxed mb-8 max-w-[540px] mx-auto text-pretty">
+          O Freelinnk é a única plataforma que <strong>cria seu conteúdo</strong>, organiza suas finanças e profissionaliza seu perfil automaticamente.
         </p>
 
-        {/* Formulário de Alta Conversão */}
-        <div className="bg-white rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-2xl shadow-[#7B2BFF]/15 border border-gray-100 relative overflow-hidden">
+        {/* Formulário Otimizado */}
+        <div className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-2xl shadow-[#7B2BFF]/15 border border-gray-100 relative">
 
-          {/* Barra de Progresso */}
-          <div className="mb-5 md:mb-6">
-             <div className="flex justify-between text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">
-                 <span>Status das Vagas</span>
-                 <span className="text-orange-600 animate-pulse">Quase Esgotado</span>
-             </div>
-             <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
-                 <div
-                    className="h-full bg-gradient-to-r from-orange-400 to-red-500 transition-all duration-1000"
+           {/* Gatilho Visual de Progresso */}
+          <div className="mb-6">
+              <div className="flex justify-between text-[10px] md:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                  <span>Preenchimento das Vagas</span>
+                  <span className="text-red-500 font-bold">Alta Demanda</span>
+              </div>
+              <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#7B2BFF] via-purple-500 to-red-500 transition-all duration-1000 ease-out"
                     style={{ width: `${progress}%` }}
-                 />
-             </div>
+                  />
+              </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
-              <input
-                type="text"
-                name="name"
-                placeholder="Seu primeiro nome"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full h-12 md:h-14 px-5 rounded-xl border border-gray-200 bg-gray-50 text-base focus:bg-white focus:border-[#7B2BFF] focus:ring-2 focus:ring-[#7B2BFF]/20 transition-all outline-none"
-              />
+          <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="sr-only">Seu Nome</label>
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Digite seu primeiro nome"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full h-14 px-5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-[#7B2BFF] focus:ring-4 focus:ring-[#7B2BFF]/10 transition-all outline-none font-medium"
+                />
+              </div>
 
-              <input
-                type="email"
-                name="email"
-                placeholder="Seu melhor e-mail"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full h-12 md:h-14 px-5 rounded-xl border border-gray-200 bg-gray-50 text-base focus:bg-white focus:border-[#7B2BFF] focus:ring-2 focus:ring-[#7B2BFF]/20 transition-all outline-none"
-              />
+              <div>
+                <label className="sr-only">Seu E-mail</label>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Seu melhor e-mail"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full h-14 px-5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-[#7B2BFF] focus:ring-4 focus:ring-[#7B2BFF]/10 transition-all outline-none font-medium"
+                />
+              </div>
 
               <div className="relative">
+                  <label className="sr-only">Seu WhatsApp</label>
                   <input
                     type="tel"
                     name="phone"
@@ -160,13 +170,12 @@ export function HeroSection() {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
                     maxLength={15}
-                    className="w-full h-12 md:h-14 pl-5 pr-10 rounded-xl border border-gray-200 bg-gray-50 text-base focus:bg-white focus:border-[#7B2BFF] focus:ring-2 focus:ring-[#7B2BFF]/20 transition-all outline-none"
+                    className="w-full h-14 pl-5 pr-10 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-[#7B2BFF] focus:ring-4 focus:ring-[#7B2BFF]/10 transition-all outline-none font-medium"
                   />
-                  <Lock className="w-4 h-4 text-green-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
 
             {error && (
-              <div className="p-3 rounded-lg bg-red-50 text-red-600 text-xs font-bold text-center">
+              <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm font-semibold text-center animate-in fade-in slide-in-from-top-2">
                 {error}
               </div>
             )}
@@ -174,20 +183,40 @@ export function HeroSection() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-14 md:h-16 mt-2 rounded-xl bg-gradient-to-r from-[#7B2BFF] to-[#6020D0] text-white font-bold text-lg hover:shadow-lg hover:shadow-[#7B2BFF]/40 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+              className="w-full h-16 rounded-xl bg-[#7B2BFF] text-white font-bold text-lg hover:bg-[#6924db] hover:shadow-lg hover:shadow-[#7B2BFF]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 group"
             >
               {isSubmitting ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin text-white/80" />
               ) : (
-                "LIBERAR MEU ACESSO AGORA"
+                <>
+                  QUERO RESOLVER ISSO AGORA
+                </>
               )}
             </button>
 
-            <p className="text-[10px] text-center text-gray-400 mt-3">
-               🔒 Seus dados estão 100% seguros e criptografados.
-            </p>
+            <div className="flex items-center justify-center gap-4 mt-4 pt-2">
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
+                    <TrendingUp className="w-3.5 h-3.5 text-green-500" />
+                    <span>Aumente o Alcance</span>
+                </div>
+                <div className="w-1 h-1 rounded-full bg-gray-300" />
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
+                    <Clock className="w-3.5 h-3.5 text-[#7B2BFF]" />
+                    <span>Poupe Tempo</span>
+                </div>
+                <div className="w-1 h-1 rounded-full bg-gray-300" />
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
+                    <Wallet className="w-3.5 h-3.5 text-blue-500" />
+                    <span>Controle Lucros</span>
+                </div>
+            </div>
           </form>
         </div>
+
+        <p className="text-xs text-center text-gray-400 mt-6">
+            🔒 Seus dados estão seguros. Não enviamos spam, apenas soluções.
+        </p>
+
       </div>
     </section>
   )

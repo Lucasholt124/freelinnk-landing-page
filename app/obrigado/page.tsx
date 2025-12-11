@@ -5,16 +5,33 @@ import { Check, Loader2, ArrowRight } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
+declare global {
+  interface Window {
+    fbq: any;
+  }
+}
+
 export default function ObrigadoPage() {
   const [countdown, setCountdown] = useState(5)
 
   useEffect(() => {
-    // Contador regressivo
+    // 1. Disparo de Conversão (Segurança Dupla)
+    // Se o user chegou aqui, ele converteu.
+    if (typeof window !== 'undefined' && window.fbq) {
+        // Você pode usar 'Purchase' se quiser ver "Compras" no dashboard
+        // Valor 0.00 para não estragar o ROAS se for gratuito
+        window.fbq('track', 'Purchase', {
+            currency: 'BRL',
+            value: 0.00,
+            content_name: 'Lead Confirmado'
+        });
+    }
+
+    // 2. Lógica de Contador
     const timer = setInterval(() => {
       setCountdown((prev) => prev - 1)
     }, 1000)
 
-    // Redirecionamento automático após 5 segundos
     const redirect = setTimeout(() => {
       window.location.href = "https://freelinnk.com"
     }, 5000)
@@ -32,7 +49,6 @@ export default function ObrigadoPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
         <div className="max-w-[500px] w-full animate-in fade-in zoom-in duration-500">
 
-          {/* Ícone de Sucesso Pulsante */}
           <div className="relative w-24 h-24 mx-auto mb-8">
             <div className="absolute inset-0 rounded-full bg-green-100 animate-ping opacity-75" />
             <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-xl shadow-green-500/20">
@@ -41,19 +57,20 @@ export default function ObrigadoPage() {
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
-            Vaga Garantida! 🚀
+            Cadastro Confirmado!
           </h1>
 
           <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-            Seus dados foram recebidos. Já enviamos o acesso para o seu e-mail e WhatsApp.
+            Parabéns pela decisão de profissionalizar seu negócio. <br/>
+            Já enviamos seu acesso para o e-mail e WhatsApp cadastrados.
           </p>
 
           <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-lg shadow-[#7B2BFF]/5 mb-8">
-            <p className="text-sm font-medium text-gray-500 mb-2">Redirecionando para a plataforma em</p>
+            <p className="text-sm font-medium text-gray-500 mb-2">Entrando na plataforma em</p>
             <div className="text-4xl font-bold text-[#7B2BFF] mb-2">{countdown}s</div>
             <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
                <Loader2 className="w-3 h-3 animate-spin" />
-               Aguarde um momento...
+               Preparando seu ambiente...
             </div>
           </div>
 
